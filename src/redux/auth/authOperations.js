@@ -83,6 +83,7 @@ const getCurrentUser = () => (dispatch, getState) => {
     .catch((error) => {
       errorMessage(getErrorText("getUserErr"));
       dispatch(authActions.getCurrentUserError(error.message));
+      localStorage.clear();
     });
 };
 

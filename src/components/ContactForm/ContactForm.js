@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { CSSTransition } from "react-transition-group";
 import TextField from "@material-ui/core/TextField";
 import { contactsOperations, contactsSelectors } from "../../redux/contacts";
@@ -9,107 +9,97 @@ import styles from "./ContactForm.module.css";
 import nameExistStyles from "./NameExist.module.css";
 import entryFieldsStyles from "./FillInEntryFields.module.css";
 
-class ContactForm extends Component {
-  state = {
-    name: "",
-    number: "",
-    nameExistErr: false,
-    entryFieldsErr: false,
-  };
+export default function ContactForm() {
+  const dispatch = useDispatch();
+  const [name, setName] = useState("");
+  const [number, setNumber] = useState("");
+  const [nameExistErr, setNameExistErr] = useState(false);
+  const [entryFieldsErr, setEntryFieldsErr] = useState(false);
 
-  handleSubmit = (e) => {
+  const contacts = useSelector((state) => contactsSelectors.getContacts(state));
+
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    const { name, number } = this.state;
     const checkLength = (string) => string.length < 1;
-    const checkOnExist = this.props.contacts.find(
-      (contact) => contact.name === name
-    );
+
+    const checkOnExist = contacts.find((contact) => contact.name === name);
 
     if (checkLength(`${name}`) || checkLength(`${number}`)) {
-      this.setState({ entryFieldsErr: true });
+      setEntryFieldsErr(true);
       setTimeout(() => {
-        this.setState({ entryFieldsErr: false });
+        setEntryFieldsErr(false);
       }, 1000);
       return;
     }
 
     if (checkOnExist) {
-      this.setState({ nameExistErr: true });
+      setNameExistErr(true);
       setTimeout(() => {
-        this.setState({ nameExistErr: false });
+        setNameExistErr(false);
       }, 1000);
       return;
     }
 
-    this.props.addContact({ name, number });
+    dispatch(contactsOperations.addContact({ name, number }));
 
-    this.setState({ name: "", number: "" });
+    setName("");
+    setNumber("");
   };
 
-  handleChange = (e) => {
-    const { name, value } = e.target;
-    this.setState({
-      [name]: value,
-    });
+  const handleChangeName = ({ target: { value } }) => {
+    setName(value);
   };
 
-  render() {
-    return (
-      <div>
-        <CSSTransition
-          in={this.state.entryFieldsErr}
-          classNames={entryFieldsStyles}
-          timeout={250}
-          unmountOnExit
-        >
-          <FillInEntryFields />
-        </CSSTransition>
-        <CSSTransition
-          in={this.state.nameExistErr}
-          classNames={nameExistStyles}
-          timeout={250}
-          unmountOnExit
-        >
-          <NameofContactExist />
-        </CSSTransition>
+  const handleChangeNumber = ({ target: { value } }) => {
+    setNumber(value);
+  };
 
-        <form className={styles.contactForm} onSubmit={this.handleSubmit}>
-          <TextField
-            label="Name"
-            variant="outlined"
-            type="text"
-            value={this.state.name}
-            name="name"
-            className={styles.contactInput}
-            onChange={this.handleChange}
-          />
+  return (
+    <div>
+      <CSSTransition
+        in={entryFieldsErr}
+        classNames={entryFieldsStyles}
+        timeout={250}
+        unmountOnExit
+      >
+        <FillInEntryFields />
+      </CSSTransition>
 
-          <TextField
-            label="Number"
-            variant="outlined"
-            type="text"
-            value={this.state.number}
-            name="number"
-            className={styles.contactInput}
-            onChange={this.handleChange}
-          />
+      <CSSTransition
+        in={nameExistErr}
+        classNames={nameExistStyles}
+        timeout={250}
+        unmountOnExit
+      >
+        <NameofContactExist />
+      </CSSTransition>
 
-          <button className={styles.contactSubmit} type="submit">
-            Add contact
-          </button>
-        </form>
-      </div>
-    );
-  }
+      <form className={styles.contactForm} onSubmit={handleSubmit}>
+        <TextField
+          label="Name"
+          variant="outlined"
+          type="text"
+          value={name}
+          name="name"
+          className={styles.contactInput}
+          onChange={handleChangeName}
+        />
+
+        <TextField
+          label="Number"
+          variant="outlined"
+          type="text"
+          value={number}
+          name="number"
+          className={styles.contactInput}
+          onChange={handleChangeNumber}
+        />
+
+        <button className={styles.contactSubmit} type="submit">
+          Add contact
+        </button>
+      </form>
+    </div>
+  );
 }
-
-const mapStateToProps = (state) => ({
-  contacts: contactsSelectors.getContacts(state),
-});
-
-const mapDispatchToProps = {
-  addContact: contactsOperations.addContact,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(ContactForm);

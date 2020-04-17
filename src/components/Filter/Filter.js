@@ -1,11 +1,12 @@
 import React from "react";
-import propTypes from "prop-types";
-import { connect } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import TextField from "@material-ui/core/TextField";
 import { contactsActions, contactsSelectors } from "../../redux/contacts";
 import styles from "./Filter.module.css";
 
-function Filter({ value, onChangeFilter }) {
+export default function Filter() {
+  const dispatch = useDispatch();
+  const value = useSelector((state) => contactsSelectors.getFilter(state));
   return (
     <div className={styles.container}>
       <TextField
@@ -13,23 +14,9 @@ function Filter({ value, onChangeFilter }) {
         type="text"
         className={styles.input}
         value={value}
-        onChange={(e) => onChangeFilter(e.target.value)}
+        onChange={(e) => dispatch(contactsActions.changeFilter(e.target.value))}
       />
     </div>
   );
 }
 
-Filter.propTypes = {
-  value: propTypes.string.isRequired,
-  onChangeFilter: propTypes.func.isRequired,
-};
-
-const mapStateToProps = (state) => ({
-  value: contactsSelectors.getFilter(state),
-});
-
-const mapDispatchToProps = {
-  onChangeFilter: contactsActions.changeFilter,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Filter);

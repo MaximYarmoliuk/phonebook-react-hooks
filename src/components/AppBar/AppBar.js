@@ -1,6 +1,5 @@
-import React from "react";
-import { connect } from "react-redux";
-import ThemeSelector from "../ThemeSelector/ThemeSelector";
+import React, {useState} from "react";
+import { useSelector } from "react-redux";
 import Navigation from "../Navigation/Navigation";
 import UserMenu from "../UserMenu/UserMenu";
 import AuthNav from "../AuthNav/AuthNav";
@@ -13,8 +12,9 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import styles from "./AppBar.module.css";
 
-const AppBar = ({ isAuthenticated }) => {
-  const [anchorEl, setAnchorEl] = React.useState(null);
+export default function AppBar() {
+  const isAuthenticated = useSelector((state) => authSelectors.isAuthenticated(state));
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -54,17 +54,11 @@ const AppBar = ({ isAuthenticated }) => {
               display: "flex",
             }}
           >
-            <ThemeSelector />
             {isAuthenticated ? <UserMenu /> : <AuthNav />}
           </div>
         </Toolbar>
       </Appbar>
     </div>
   );
-};
+}
 
-const mapStateToProps = (state) => ({
-  isAuthenticated: authSelectors.isAuthenticated(state),
-});
-
-export default connect(mapStateToProps)(AppBar);
